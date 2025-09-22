@@ -20,7 +20,7 @@ request = pc.makeRequestRSpec()
 
 # Node node-0
 node_0 = request.RawPC('node-0')
-node_0.hardware_type = 'm510'
+node_0.hardware_type = 'm400'
 
 
 # Print the generated rspec

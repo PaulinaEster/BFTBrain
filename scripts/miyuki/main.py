@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import logging
+import site
 import sys
 import os
 import argparse
@@ -10,12 +11,16 @@ import multiprocessing as multi
 
 from functools import wraps
 
+site.addsitedir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../venv/lib/python3.13/site-packages'))
+
+# MASTER = 'bftf-master-m510'
+MASTER = 'bftbrain-xl170'
+
 
 logging.basicConfig(
     level=logging.DEBUG,
     format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s"
 )
-
 parser = argparse.ArgumentParser(description='Start a BFTBrain experiment.')
 parser.add_argument('--experiment', '-e', type=str, required=True, help='Cloudlab experiment name')
 parser.add_argument('--profile', '-p', type=str, required=True, help='Cloudlab profile to use')
@@ -47,6 +52,8 @@ single_parser.add_argument('--public', '-u', action='store_true', default=False,
 single_parser.add_argument('--config', '-c', default='', help='Path to the configuration to run, default is to use `code/config.framework.yaml` on this machine')
 single_parser.add_argument('protocol', type=str, help='Protocol profile name to run (e.g. pbft)')
 
+collect_parser.add_argument('--name-pack', '-np', type=str, required=False, help='Provide the name for collect data of an experiment.')
+
 args = parser.parse_args()
 
 private_key_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "id_cloudlab")
@@ -56,6 +63,8 @@ if len(args.experiment) > 15:
     logging.error('Experiment name {} is too long (cannot exceed 15 characters)'.format(args.experiment))
     sys.exit(1)
 
+if args.action == 'deploy':
+    total_cnt = 4
 if args.action == 'deploy':
     total_cnt = 4
 elif args.action == 'gridsearch':
@@ -121,7 +130,7 @@ def terminate_nodes(experiment_name, profile_name):
 
 @miyuki_log('Instantiating Master Node ...')
 def get_master():
-    return get_nodes(f'{args.experiment}m', 'bftbrain-master')
+    return get_nodes(f'{args.experiment}m', MASTER)
 
 
 @miyuki_log('Instantiating Worker Nodes ...')
@@ -137,7 +146,7 @@ def get_workers():
 
 @miyuki_log('Terminating Master Node ...')
 def terminate_master():
-    terminate_nodes(f'{args.experiment}m', 'bftbrain-master')
+    terminate_nodes(f'{args.experiment}m', MASTER)
 
 
 @miyuki_log('Terminating Worker Nodes ...')
@@ -158,7 +167,7 @@ def deploy_single_worker(worker_node):
                 "-p",
                 "22",
                 "-o",
-                "StrictHostKeyChecking no",
+                "StrictHostKeyChecking=no",
                 "wget -O - https://gist.githubusercontent.com/JeffersonQin/04ddbb70868010b781e50527cc92c168/raw/40f9fe94ec56b03503c80b2167b134afbfb41691/BFTBrain-deploy.sh > setup.sh && " + 
                 "chmod +x setup.sh && source setup.sh &> setup.log"
             ], 
@@ -177,7 +186,6 @@ def deploy_workers(workers):
     ks.sort()
 
     worker_nodes = [workers.nodes[k] for k in ks]
-    
     with multi.Pool(processes=len(worker_nodes)) as pool:
         pool.map(deploy_single_worker, worker_nodes)
     
@@ -201,7 +209,7 @@ def deploy_master(master, servers_list_str):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         "git clone https://github.com/JeffersonQin/BFTBrain && " + 
         f"echo \"{servers_list_str}\" > BFTBrain/scripts/servers.txt && " +
         f"echo \"IdentityFile /users/{os.environ['USER']}/BFTBrain/scripts/miyuki/id_cloudlab\" >> /users/{os.environ['USER']}/.ssh/config && " +
@@ -248,7 +256,7 @@ def start_gridsearch(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"tmux new-session -d -s {tmux_window_name} && " +
         f"tmux send-keys -t {tmux_window_name}:0 \"{command}\" C-m"
     ]).check_returncode()
@@ -268,7 +276,7 @@ def upload_reproduction_configs(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"mkdir -p BFTBrain/scripts/reproduce && rm -r BFTBrain/scripts/reproduce"
     ]).check_returncode()
 
@@ -299,7 +307,7 @@ def start_reproduction(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"tmux new-session -d -s {tmux_window_name} && " +
         f"tmux send-keys -t {tmux_window_name}:0 \"{command}\" C-m"
     ]).check_returncode()
@@ -319,7 +327,7 @@ def upload_single_config(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"echo 'abc' > BFTBrain/scripts/config.gridsearch.output.yaml && rm BFTBrain/scripts/config.gridsearch.output.yaml"
     ]).check_returncode()
 
@@ -355,7 +363,7 @@ def start_single(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"tmux new-session -d -s {tmux_window_name} && " +
         f"tmux send-keys -t {tmux_window_name}:0 \"{command}\" C-m"
     ]).check_returncode()
@@ -376,7 +384,7 @@ def start_single(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"tmux send-keys -t {tmux_window_name}:0 C-d" # send CTRL+D to stop the trial
     ]).check_returncode()
 
@@ -410,7 +418,7 @@ def sync_master(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         # back up servers.txt
         f"cp BFTBrain/scripts/servers.txt servers.bak.txt && " +
         # delete previous BFTBrain folder
@@ -433,7 +441,7 @@ def sync_master(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         # extract BFTBrain-Sync.tar.gz
         "tar -xzvf BFTBrain-Sync.tar.gz && " +
         # restore servers.txt
@@ -467,7 +475,7 @@ def sync_single_worker(worker_node):
                 "-p",
                 "22",
                 "-o",
-                "StrictHostKeyChecking no",
+                "StrictHostKeyChecking=no",
                 # delete previous BFTBrain folder
                 "mkdir -p BFTBrain && rm -rf BFTBrain &> sync.log && " +
                 # delete previous BFTBrain-Sync.tar.gz
@@ -496,7 +504,7 @@ def sync_single_worker(worker_node):
                 "-p",
                 "22",
                 "-o",
-                "StrictHostKeyChecking no",
+                "StrictHostKeyChecking=no",
                 # extract BFTBrain-Sync.tar.gz
                 "tar -xzvf BFTBrain-Sync.tar.gz &> sync.log && " +
                 # compile
@@ -527,7 +535,7 @@ def collect_data(master):
             "-p",
             "22",
             "-o",
-            "StrictHostKeyChecking no",
+            "StrictHostKeyChecking=no",
             "cd BFTBrain/scripts && " +
             "mkdir -p archieve && rm -r archieve && " +
             "python3 analyze.py &> analyze.log && " +
@@ -540,10 +548,14 @@ def collect_data(master):
         print(f"Error occurred on {master_node_hostname}, check ~/BFTBrain/scripts/analyze.log on that host for more information")
         raise e
     
+    name_experiment = args.experiment
+    if(args.name_pack):
+        name_experiment = args.name_pack 
+        
     subprocess.run([
         "bash",
         "-c",
-        f"sftp -oPort=22 -oStrictHostKeyChecking=no -oIdentityFile=\"{private_key_path}\" {os.environ['USER']}@{master_node_hostname} <<< 'get \"BFTBrain/{args.experiment}.tar.gz\"'"
+        f"sftp -oPort=22 -oStrictHostKeyChecking=no -oIdentityFile=\"{private_key_path}\" {os.environ['USER']}@{master_node_hostname} <<< 'get \"BFTBrain/{name_experiment}.tar.gz\"'"
     ]).check_returncode()
 
 

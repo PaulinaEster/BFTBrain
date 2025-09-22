@@ -13,10 +13,10 @@ protocol:
     leader: rotate
     request-target: primary
 
-  roles:
-    - primary
-    - nodes
-    - client
+  roles: # papeis
+    - primary # leader
+    - nodes # nodes
+    - client #cliente
 
   phases:
     - name: normal
@@ -43,6 +43,7 @@ protocol:
 
   transitions:
     from:
+        # cliente passa de idle para executed se recebe uma mensagem de resposta de f+1
       - role: client
         state: idle
         to:
@@ -52,7 +53,7 @@ protocol:
               type: message
               message: reply
               quorum: f + 1
-
+        # lider passa de idle para wait_prepare se recebe uma mensagem de request de quorum 1 e envia aos nodes mensagem de prepare
       - role: primary
         state: idle
         to:
@@ -64,7 +65,7 @@ protocol:
             response:
               - target: nodes
                 message: prepare
-
+        # nodos passam de idle para wait_commit_all se recebem mensagem de prepare de quorum 1 e envia para o primary a mensagem de prepare
       - role: nodes
         state: idle
         to:

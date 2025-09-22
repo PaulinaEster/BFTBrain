@@ -40,7 +40,9 @@ result = subprocess.run([
     "-c",
     "~/BFTBrain/scripts/get_ip.sh"
 ], stdout=subprocess.PIPE)
-server_host = result.stdout.decode().strip()
+# server_host = result.stdout.decode().strip()
+server_host = "127.0.0.1"
+
 # check whether is valid ipv4
 ipaddress.ip_address(server_host)
 if type(ipaddress.ip_address(server_host)) is not ipaddress.IPv4Address:
