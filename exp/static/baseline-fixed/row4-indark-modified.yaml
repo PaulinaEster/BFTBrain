@@ -71,8 +71,7 @@ fault:
 switching:
   protocol-pool:
     - pbft
-    - zyzzyva
-    - hotstuff
-    - cheapbft
     - sbft
-    - prime
+    - hotstuff
+    - hotstuffviewchange
+    - hotstuffvc

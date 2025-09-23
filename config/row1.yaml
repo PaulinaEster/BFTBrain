@@ -9,13 +9,13 @@ general:
   f: 1
   max-active-requests: 1000
   verbosity: v
-  logfile: false # true -> file, false -> stdout
-  learning: false
-  report-sequence: 20000000
-  exchange-sequence: 30000000
+  logfile: true # true -> file, false -> stdout
+  learning: true
+  report-sequence: 500
+  exchange-sequence: 600
 benchmark:
   block-size: 10
-  checkpoint-size: 100000000
+  checkpoint-size: 1000
   catch-up-k: 2
   request-interval-micros: 100
   benchmark-interval-ms: 3000
@@ -24,9 +24,9 @@ benchmark:
   client: basic
   closed-loop:
     enable: true
-    num-client: 100
-    delay-ms: 0
-  leader-rotate-interval: 100
+    num-client: 50
+    delay-ms: 5000
+  leader-rotate-interval: 50
   aggregation-delay-ms: 100
 workload:
   # lower for more contention
@@ -34,18 +34,18 @@ workload:
   dataset-size: 100
   payload:
     request-size: 4000
-    reply-size: 4000
+    reply-size: 0
   compute-factor: 0
   distribution:
-    - 1 # 00
+    - 0 # 00
     - 0 # 04
-    - 0 # 40
+    - 1 # 40
     - 0 # 44
   read-only-ratio: 0
 fault:
   in-dark:
     affected-entities:
-      - 2
+      - 100000
     generator:
       advance: true
       init: false
@@ -67,14 +67,9 @@ fault:
     affected-entities:
       - 0
     attacking: false
-    timer: 100
+    timer: 0
 switching:
   protocol-pool:
-    - pbft
-    - zyzzyva
-    - hotstuff
-    - hotstuffviewchange
-    - hotstuffvc
-    - cheapbft
-    - sbft
-    - prime
+    - pbft 
+    - hotstuff 
+    - sbft 

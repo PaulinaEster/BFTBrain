@@ -27,9 +27,9 @@ public class FeatureManager {
     public static final int SLOW = 2;
 
     public final Map<String, Integer> hasFastPath = Map.of("pbft", 0, "zyzzyva", 1, "cheapbft", 0, "sbft", 1,
-            "hotstuff", 0, "prime", 0);
+            "hotstuff", 0,"hotstuffvc", 0, "hotstuffviewchange", 0, "prime", 0);
     public final Map<String, Integer> hasLeaderRotation = Map.of("pbft", 0, "zyzzyva", 0, "cheapbft", 0, "sbft", 0,
-            "hotstuff", 1, "prime", 1);
+            "hotstuff", 1, "hotstuffvc", 1, "hotstuffviewchange", 1, "prime", 1);
 
     // episode -> extractor
     private Map<Integer, Extractor> slots;

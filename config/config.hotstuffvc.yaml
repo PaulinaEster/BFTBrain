@@ -1,0 +1,157 @@
+plugins:
+  role: primary
+  message:
+    - digest
+    - mac
+    - checkpoint
+  transition:
+    - checkpoint
+  pipeline: direct
+
+protocol:
+  general:
+    leader: rotate
+    request-target: primary
+
+  roles: # papeis
+    - primary # leader
+    - nodes # nodes
+    - client # cliente 
+
+  phases:
+    - name: normal
+      states:
+        - idle
+        - wait_prepare
+        - wait_commit_primary
+        - wait_commit_all
+        - wait_decide
+        - executed 
+        - wait_view_change_all
+        - wait_view_change_primary
+      messages:
+        - name: request
+          request-block: true
+        - name: reply
+          request-block: true
+        - name: prepare
+          request-block: true
+        - name: new_view
+          request-block: false
+        - commit
+        - decide
+
+    - name: checkpoint
+      messages:
+        - checkpoint
+
+  transitions:
+    from:
+        # cliente passa de idle para executed se recebe uma mensagem de resposta de f+1
+      - role: client
+        state: idle
+        to:
+          - state: executed
+            update: sequence
+            condition:
+              type: message
+              message: reply
+              quorum: f + 1
+        # lider passa de idle para wait_prepare se recebe uma mensagem de request de quorum 1 e envia aos nodes mensagem de prepare
+      - role: primary
+        state: idle
+        to:
+          - state: wait_prepare
+            condition:
+              type: message
+              message: request
+              quorum: 1
+            response:
+              - target: nodes
+                message: prepare
+        # nodos passam de idle para wait_commit_all se recebem mensagem de prepare de quorum 1 e envia para o primary a mensagem de prepare
+      - role: nodes
+        state: idle
+        to:
+          - state: wait_commit_all
+            condition:
+              type: message
+              message: prepare
+              quorum: 1
+            response:
+              - target: primary
+                message: prepare
+
+      - role: primary
+        state: wait_prepare
+        to:
+          - state: wait_commit_primary
+            condition:
+              type: message
+              message: prepare
+              quorum: 2f + 1
+            response:
+              - target: nodes
+                message: commit
+
+      - role: nodes
+        state: wait_commit_all
+        to:
+          - state: wait_decide
+            condition:
+              type: message
+              message: commit
+              quorum: 1
+            response:
+              - target: primary
+                message: commit
+
+      - role: primary
+        state: wait_commit_primary
+        to:
+          - state: executed
+            update: sequence
+            condition:
+              type: message
+              message: commit
+              quorum: 2f + 1
+            response:
+              - target: nodes
+                message: decide
+              - target: client
+                message: reply
+
+      - role: nodes
+        state: wait_decide
+        to:
+          - state: executed
+            update: sequence
+            condition:
+              type: message
+              message: decide
+              quorum: 1
+            response:
+              - target: client
+                message: reply
+          - state: wait_view_change_all
+            update: view
+            condition:
+              type: message
+              message: decide
+              quorum: 1
+            response:
+              - target: primary
+                message: new_view
+
+      - role: primary
+        state: executed
+        to:
+          - state: wait_view_change_primary
+            update: sequence
+            condition:
+              type: message
+              message: decide
+              quorum: 2f + 1
+            response:
+              - target: nodes
+                message: new_view

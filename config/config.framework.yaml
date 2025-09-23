@@ -12,21 +12,21 @@ general:
   verbosity: v
   logfile: true # true -> file, false -> stdout
   learning: true
-  report-sequence: 500
+  report-sequence: 2500
   exchange-sequence: 3000
 benchmark:
   block-size: 10
-  checkpoint-size: 500
+  checkpoint-size: 5000
   catch-up-k: 2
   request-interval-micros: 100
-  benchmark-interval-ms: 1000
+  benchmark-interval-ms: 3000
   timeout: fixed
   timeout-trigger-interval-ms: 50
   client: basic
   closed-loop:
     enable: true
     num-client: 100
-    delay-ms: 5000
+    delay-ms: 0
   leader-rotate-interval: 100
   aggregation-delay-ms: 200
 workload:
@@ -79,10 +79,12 @@ fault:
 switching:
   protocol-pool:
     - pbft
-    - zyzzyva
-    - hotstuff
-    - cheapbft
     - sbft
+    - hotstuff
+    - hotstuffviewchange
+    - hotstuffvc
+    - zyzzyva
+    - cheapbft
     - prime
   # debug-sequence:
   #   - cheapbft

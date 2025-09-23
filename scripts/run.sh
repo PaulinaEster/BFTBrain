@@ -77,6 +77,8 @@ sleep 10
 ./run_single.sh cheapbft $count $host_ip $duration
 ./run_single.sh sbft $count $host_ip $duration
 ./run_single.sh hotstuff $count $host_ip $duration
+./run_single.sh hotstuffvc $count $host_ip $duration
+./run_single.sh hotstuffhotstuffviewchange $count $host_ip $duration
 ./run_single.sh prime $count $host_ip $duration
 
 echo "\033[4;42mPacking Benchmark Logs\033[m"
