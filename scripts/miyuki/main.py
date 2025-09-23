@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-
 import logging
+import site
 import sys
 import os
 import argparse
@@ -10,6 +10,12 @@ import multiprocessing as multi
 
 from functools import wraps
 
+site.addsitedir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../venv/lib/python3.12/site-packages'))
+
+
+# MASTER = 'bftf-master-m510'
+# MASTER = 'bftbrain-xl170'
+MASTER = 'bftf-master-c6620'
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -121,7 +127,7 @@ def terminate_nodes(experiment_name, profile_name):
 
 @miyuki_log('Instantiating Master Node ...')
 def get_master():
-    return get_nodes(f'{args.experiment}m', 'bftbrain-master')
+    return get_nodes(f'{args.experiment}m', MASTER)
 
 
 @miyuki_log('Instantiating Worker Nodes ...')
@@ -137,7 +143,7 @@ def get_workers():
 
 @miyuki_log('Terminating Master Node ...')
 def terminate_master():
-    terminate_nodes(f'{args.experiment}m', 'bftbrain-master')
+    terminate_nodes(f'{args.experiment}m', MASTER)
 
 
 @miyuki_log('Terminating Worker Nodes ...')
