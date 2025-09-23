@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-
 import logging
+import site
 import sys
 import os
 import argparse
@@ -9,6 +9,8 @@ import time
 import multiprocessing as multi
 
 from functools import wraps
+
+site.addsitedir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../venv/lib/python3.12/site-packages'))
 
 
 logging.basicConfig(
