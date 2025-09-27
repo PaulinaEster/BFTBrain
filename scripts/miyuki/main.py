@@ -39,7 +39,7 @@ terminate_parser = subparsers.add_parser('terminate', help='Terminate a cloudlab
 sync_parser = subparsers.add_parser('sync', help='Sync the code to all nodes in the experiment (including master and workers)')
 
 deploy_parser.add_argument('--no-instantiate', '-n', action='store_true', default=False, required=False, help='Skip instantiating the experiment (default False, i.e. instantiate the experiment). This option can be used when the experiment is manually instantiated on Cloudlab but not yet have the environment setup.')
-deploy_parser.add_argument('--master-exp', '-em', type=str, default=MASTER, required=False, help='define perfil do master')
+parser.add_argument('--master-exp', '-em', type=str, default=MASTER, required=False, help='define perfil do master')
 
 gs_parser.add_argument('--public', '-u', action='store_true', default=False, required=False, help='Use public IPs for the experiment (default False, i.e. use local IPs)')
 gs_parser.add_argument('base_config', type=str, help='Base configuration file to use')
@@ -79,7 +79,7 @@ elif args.action == 'sync':
     total_cnt = 5
 
 current_cnt = 1
-if(args.action == 'deploy' and args.master_exp):
+if(args.master_exp):
     MASTER = args.master_exp
 
 def miyuki_log(log_str: str):

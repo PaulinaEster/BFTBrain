@@ -2,7 +2,7 @@
 
 Exemplo:
 ```
-USER='your_user' PWORD='your_pass' KEYPWORD='your_ssh_pass' ./scripts/miyuki/main.py -e xl170-f-1 -p xl170-f-1 --project DDC deploy -em bftbrain-xl170 
+USER='your_user' PWORD='your_pass' KEYPWORD='your_ssh_pass' ./scripts/miyuki/main.py -e xl170-f-1 -em bftbrain-xl170 -p xl170-f-1 --project DDC deploy
 ```
 
 
