@@ -39,6 +39,7 @@ terminate_parser = subparsers.add_parser('terminate', help='Terminate a cloudlab
 sync_parser = subparsers.add_parser('sync', help='Sync the code to all nodes in the experiment (including master and workers)')
 
 deploy_parser.add_argument('--no-instantiate', '-n', action='store_true', default=False, required=False, help='Skip instantiating the experiment (default False, i.e. instantiate the experiment). This option can be used when the experiment is manually instantiated on Cloudlab but not yet have the environment setup.')
+deploy_parser.add_argument('--master-exp', '-em', type=str, default=MASTER, required=False, help='define perfil do master')
 
 gs_parser.add_argument('--public', '-u', action='store_true', default=False, required=False, help='Use public IPs for the experiment (default False, i.e. use local IPs)')
 gs_parser.add_argument('base_config', type=str, help='Base configuration file to use')
@@ -78,6 +79,8 @@ elif args.action == 'sync':
     total_cnt = 5
 
 current_cnt = 1
+if(args.action == 'deploy' and args.master_exp):
+    MASTER = args.master_exp
 
 def miyuki_log(log_str: str):
     def log_decorator(func):
@@ -164,7 +167,7 @@ def deploy_single_worker(worker_node):
                 "-p",
                 "22",
                 "-o",
-                "StrictHostKeyChecking no",
+                "StrictHostKeyChecking=no",
                 "wget -O - https://gist.githubusercontent.com/JeffersonQin/04ddbb70868010b781e50527cc92c168/raw/40f9fe94ec56b03503c80b2167b134afbfb41691/BFTBrain-deploy.sh > setup.sh && " + 
                 "chmod +x setup.sh && source setup.sh &> setup.log"
             ], 
@@ -207,7 +210,7 @@ def deploy_master(master, servers_list_str):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         "git clone https://github.com/JeffersonQin/BFTBrain && " + 
         f"echo \"{servers_list_str}\" > BFTBrain/scripts/servers.txt && " +
         f"echo \"IdentityFile /users/{os.environ['USER']}/BFTBrain/scripts/miyuki/id_cloudlab\" >> /users/{os.environ['USER']}/.ssh/config && " +
@@ -254,7 +257,7 @@ def start_gridsearch(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"tmux new-session -d -s {tmux_window_name} && " +
         f"tmux send-keys -t {tmux_window_name}:0 \"{command}\" C-m"
     ]).check_returncode()
@@ -274,7 +277,7 @@ def upload_reproduction_configs(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"mkdir -p BFTBrain/scripts/reproduce && rm -r BFTBrain/scripts/reproduce"
     ]).check_returncode()
 
@@ -305,7 +308,7 @@ def start_reproduction(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"tmux new-session -d -s {tmux_window_name} && " +
         f"tmux send-keys -t {tmux_window_name}:0 \"{command}\" C-m"
     ]).check_returncode()
@@ -325,7 +328,7 @@ def upload_single_config(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"echo 'abc' > BFTBrain/scripts/config.gridsearch.output.yaml && rm BFTBrain/scripts/config.gridsearch.output.yaml"
     ]).check_returncode()
 
@@ -361,7 +364,7 @@ def start_single(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"tmux new-session -d -s {tmux_window_name} && " +
         f"tmux send-keys -t {tmux_window_name}:0 \"{command}\" C-m"
     ]).check_returncode()
@@ -382,7 +385,7 @@ def start_single(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         f"tmux send-keys -t {tmux_window_name}:0 C-d" # send CTRL+D to stop the trial
     ]).check_returncode()
 
@@ -416,7 +419,7 @@ def sync_master(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         # back up servers.txt
         f"cp BFTBrain/scripts/servers.txt servers.bak.txt && " +
         # delete previous BFTBrain folder
@@ -439,7 +442,7 @@ def sync_master(master):
         "-p",
         "22",
         "-o",
-        "StrictHostKeyChecking no",
+        "StrictHostKeyChecking=no",
         # extract BFTBrain-Sync.tar.gz
         "tar -xzvf BFTBrain-Sync.tar.gz && " +
         # restore servers.txt
@@ -473,7 +476,7 @@ def sync_single_worker(worker_node):
                 "-p",
                 "22",
                 "-o",
-                "StrictHostKeyChecking no",
+                "StrictHostKeyChecking=no",
                 # delete previous BFTBrain folder
                 "mkdir -p BFTBrain && rm -rf BFTBrain &> sync.log && " +
                 # delete previous BFTBrain-Sync.tar.gz
@@ -502,7 +505,7 @@ def sync_single_worker(worker_node):
                 "-p",
                 "22",
                 "-o",
-                "StrictHostKeyChecking no",
+                "StrictHostKeyChecking=no",
                 # extract BFTBrain-Sync.tar.gz
                 "tar -xzvf BFTBrain-Sync.tar.gz &> sync.log && " +
                 # compile
@@ -533,7 +536,7 @@ def collect_data(master):
             "-p",
             "22",
             "-o",
-            "StrictHostKeyChecking no",
+            "StrictHostKeyChecking=no",
             "cd BFTBrain/scripts && " +
             "mkdir -p archieve && rm -r archieve && " +
             "python3 analyze.py &> analyze.log && " +
