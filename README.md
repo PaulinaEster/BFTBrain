@@ -1,5 +1,11 @@
 # BFTBrain
 
+Exemplo:
+```
+USER='your_user' PWORD='your_pass' KEYPWORD='your_ssh_pass' ./scripts/miyuki/main.py -e xl170-f-1 -p xl170-f-1 --project DDC deploy -em bftbrain-xl170 
+```
+
+
 ## Mode 1 - No switching
 
 This mode is useful for testing a _fixed_ protocol inside our protocol pool. To enable this mode:
